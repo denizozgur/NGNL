@@ -1,0 +1,13 @@
+      
+<ul class="space-y-3">
+    {% for buff in active_buffs %}
+        <li class="bg-green-50 border border-green-200 p-4 rounded-lg shadow-sm">
+            <span class="font-bold text-green-800">{{ buff.name }}</span>
+            <p class="text-green-700 mt-1">{{ buff.description }}</p>
+        </li>
+    {% empty %}
+        <li class="bg-white p-4 rounded-lg shadow-sm text-gray-500">You have no active buffs. Go level up!</li>
+    {% endfor %}
+</ul>
+
+    

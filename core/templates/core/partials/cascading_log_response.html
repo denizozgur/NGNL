@@ -1,0 +1,17 @@
+<!-- 
+  This first part is the MAIN response. 
+  Because the form's hx-target is "#task-{{ task.id }}", this part
+  will replace the parent task's list item with its "Logged!" state.
+-->
+{% include 'core/partials/task_item_logged.html' %}
+
+<!-- 
+  These next parts are "Out of Band" (OOB).
+  htmx will find each element on the page whose ID matches and swap it.
+-->
+{% for subtask in subtasks %}
+  <li id="task-{{ subtask.id }}" class="bg-gray-50 p-3 rounded-md shadow-sm flex justify-between items-center text-green-600" hx-swap-oob="true">
+    <span class="font-medium">{{ subtask.name }}</span>
+    <span class="font-bold">Logged! ✅</span>
+  </li>
+{% endfor %}

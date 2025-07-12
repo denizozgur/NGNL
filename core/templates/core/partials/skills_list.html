@@ -1,0 +1,29 @@
+      
+<ul class="space-y-3">
+    {% for progress in skill_progress %}
+        <li class="bg-white p-4 rounded-lg shadow-sm">
+            <!-- All the existing logic for displaying a single skill -->
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-lg text-gray-900">{{ progress.skill.name }}</span>
+                <span class="bg-gray-200 text-gray-800 text-sm font-semibold px-3 py-1 rounded-full">
+                    Level {% if progress.current_level %}{{ progress.current_level.level_number }}{% else %}0{% endif %}
+                </span>
+            </div>
+            {% if progress.current_level and progress.current_level.level_number < progress.skill.levels.last.level_number %}
+                {% with next_level_slice=progress.skill.levels.all|slice:progress.current_level.level_number %}
+                    {% with next_level=next_level_slice|first %}
+                        <p class="text-gray-600 mt-2 text-sm">Next: {{ next_level.requirement_description }}</p>
+                    {% endwith %}
+                {% endwith %}
+            {% elif progress.current_level %}
+                <p class="text-green-600 mt-2 text-sm font-medium">Max Level Reached!</p>
+            {% else %}
+                <p class="text-gray-600 mt-2 text-sm">Start logging tasks to gain levels!</p>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li class="bg-white p-4 rounded-lg shadow-sm text-gray-500">You haven't assigned any skills yet.</li>
+    {% endfor %}
+</ul>
+
+    

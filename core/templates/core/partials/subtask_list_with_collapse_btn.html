@@ -1,0 +1,12 @@
+{# This is the main content that will go into the hx-target #}
+{% include 'core/partials/subtask_list.html' with subtasks=subtasks %}
+
+{# This is the "Out of Band" content. It will be swapped based on its ID. #}
+<button hx-get="{% url 'get_subtasks' parent_task.id %}?clear=true"
+        hx-target="#subtasks-for-{{ parent_task.id }}"
+        hx-swap="innerHTML"
+        id="expand-btn-{{ parent_task.id }}"
+        hx-swap-oob="true"
+        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-3 rounded-md transition-colors">
+    -
+</button>
