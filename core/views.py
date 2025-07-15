@@ -1,9 +1,11 @@
 # --- FILE: core/views.py ---
 from django.shortcuts import render, redirect, get_object_or_404 # Add redirect and get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST # Import this decorator
+from django.views.decorators.http import require_POST, require_http_methods # Import these decorators
+from django.http import HttpResponse
 
-from .models import Task, TaskLog, UserSkillProgress, Buff
+
+from .models import Task, TaskLog, UserSkillProgress, Buff, Skill
 # The home view is no longer needed since we are using a dashboard
 # You can delete the old home function
 
@@ -67,18 +69,19 @@ def log_task(request, task_id):
 def get_subtasks(request, parent_id):
     parent_task = get_object_or_404(Task, id=parent_id, user=request.user)
 
-    # Check if we are in "collapse" mode
+    # This handles the "Close" button click
     if request.GET.get('clear'):
-        # Return an empty string for the main target, and the original '+' button via OOB
-        return render(request, 'core/partials/expand_button_oob.html', {'task': parent_task})
+        # We need to send back the ORIGINAL "Subtasks" button
+        return render(request, 'core/partials/subtask_button_oob.html', {'task': parent_task})
 
-    # "Expand" mode (the original logic)
+    # This handles the "Subtasks" button click
     subtasks = parent_task.subtasks.all().order_by('display_order')
     context = {
         'subtasks': subtasks,
-        'parent_task': parent_task # Pass the parent task for the template IDs
+        'parent_task': parent_task
     }
-    return render(request, 'core/partials/subtask_list_with_collapse_btn.html', context)    
+    # We send back the list AND the new "Close" button
+    return render(request, 'core/partials/subtask_list_with_close_btn.html', context)
 
 
 @login_required
@@ -90,3 +93,148 @@ def get_skills_list(request):
 def get_buffs_list(request):
     active_buffs = Buff.objects.filter(user=request.user, is_active=True)
     return render(request, 'core/partials/buffs_list.html', {'active_buffs': active_buffs})
+
+@login_required
+def get_add_task_form(request):
+    """Returns the HTML for the add task form."""
+    return render(request, 'core/partials/add_task_form.html')
+
+@require_POST
+@login_required
+def add_task(request):
+    """Processes the form submission, creates a new task, and returns the task item HTML."""
+    task_name = request.POST.get('task_name')
+    if task_name:
+        # For now, we only create top-level tasks.
+        new_task = Task.objects.create(
+            user=request.user, 
+            name=task_name,
+            parent_task=None # Explicitly a top-level task
+        )
+        # Return the HTML fragment for just the new task
+        return render(request, 'core/partials/task_item.html', {'task': new_task})
+    
+    # If the name is blank, return an empty response so nothing happens
+    return HttpResponse("")
+
+@require_http_methods(["DELETE"]) # This ensures only DELETE requests are allowed
+@login_required
+def delete_task(request, task_id):
+    """Finds the task by its ID, deletes it, and returns an empty response."""
+    # Find the task ensuring it belongs to the logged-in user for security
+    task_to_delete = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    task_to_delete.delete()
+    
+    # Return an empty response with a 200 OK status.
+    # This tells htmx the request was successful and it should proceed
+    # with the swap (removing the element from the page).
+    return HttpResponse("")
+
+@login_required
+def get_edit_form(request, task_id):
+    """Returns the form for editing a specific task."""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    # THE ERROR IS LIKELY ON THIS LINE.
+    # It must return 'edit_task_form.html'.
+    return render(request, 'core/partials/edit_task_form.html', {'task': task})
+
+    
+@login_required
+def get_task_item(request, task_id):
+    """Returns the normal display for a single task item."""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    return render(request, 'core/partials/task_item.html', {'task': task})
+
+@require_http_methods(["PUT"]) # Note: We use PUT for updates
+@login_required
+def update_task(request, task_id):
+    """Processes the edit form submission and updates the task."""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    # htmx sends PUT data in a different way, so we need to parse it
+    from django.http import QueryDict
+    put_data = QueryDict(request.body)
+    new_name = put_data.get('task_name')
+
+    if new_name:
+        task.name = new_name
+        task.save()
+    
+    # Return the updated, normal task display
+    return render(request, 'core/partials/task_item.html', {'task': task})
+
+@login_required
+def get_add_subtask_form(request, parent_id):
+    """Returns the form for adding a subtask to a parent."""
+    parent_task = get_object_or_404(Task, id=parent_id, user=request.user)
+    return render(request, 'core/partials/add_subtask_form.html', {'parent_task': parent_task})
+
+@require_POST
+@login_required
+def add_subtask(request, parent_id):
+    """Processes the form submission, creates a new subtask."""
+    parent_task = get_object_or_404(Task, id=parent_id, user=request.user)
+    subtask_name = request.POST.get('subtask_name')
+
+    if subtask_name:
+        # Create the new subtask, linking it to its parent
+        new_subtask = Task.objects.create(
+            user=request.user,
+            name=subtask_name,
+            parent_task=parent_task
+        )
+        # Return the HTML for the new subtask list item
+        return render(request, 'core/partials/task_item.html', {'task': new_subtask})
+    
+    return HttpResponse("")
+
+@login_required
+def skills_page_view(request):
+    """
+    Displays the main skills management page.
+    """
+    skills = Skill.objects.filter(user=request.user)
+    context = {
+        'skills': skills
+    }
+    return render(request, 'core/skills_page.html', context)
+
+@login_required
+def get_add_skill_form(request):
+    """
+    Returns the HTML for the add skill form.
+    """
+    return render(request, 'core/partials/add_skill_form.html')
+
+
+@login_required
+def get_add_skill_button(request):
+    """
+    Returns the original 'Create New Skill' button.
+    """
+    return render(request, 'core/partials/get_add_skill_button.html')
+
+
+@require_POST
+@login_required
+def add_skill(request):
+    """
+    Processes the form submission, creates a new skill,
+    and returns the HTML for the new skill item.
+    """
+    skill_name = request.POST.get('skill_name')
+    if skill_name:
+        # Create the new skill for the logged-in user
+        new_skill = Skill.objects.create(
+            user=request.user, 
+            name=skill_name
+        )
+        # Return the HTML fragment for just the new skill item
+        # This uses the 'skill_item.html' partial we created earlier
+        return render(request, 'core/partials/skill_item.html', {'skill': new_skill})
+    
+    # If the name is blank, return an empty response so nothing happens
+    return HttpResponse("")
+

@@ -1,0 +1,42 @@
+<li id="task-{{ task.id }}" class="bg-white p-4 rounded-lg shadow-md flex-col">
+    <!-- Parent Task Row -->
+    <div class="flex justify-between items-center w-full">
+        <!-- Task Name (Unchanged) -->
+        <div hx-get="{% url 'get_edit_form' task.id %}"
+             hx-target="#task-{{ task.id }}"
+             hx-swap="outerHTML"
+             class="font-bold text-lg cursor-pointer hover:text-blue-600 transition-colors flex-grow">
+            {{ task.name }}
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <!-- =================================================================== -->
+            <!-- == THE FIX: This 'if' block ensures only parent tasks get the button == -->
+            {% if not task.parent_task %}
+                <div id="subtask-btn-container-{{ task.id }}">
+                    <button hx-get="{% url 'get_subtasks' task.id %}"
+                            hx-target="#subtasks-for-{{ task.id }}"
+                            hx-swap="innerHTML"
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition-colors">
+                        Subtasks
+                    </button>
+                </div>
+            {% endif %}
+            <!-- =================================================================== -->
+
+            <!-- Log Button (Unchanged) -->
+            <form id="log-form-{{ task.id }}" method="POST"
+                  hx-post="{% url 'log_task' task.id %}"
+                  hx-target="#task-{{ task.id }}"
+                  hx-swap="outerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="is_htmx" value="true">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-md transition-colors">Log</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Target for Subtasks (This is where the subtask list appears) -->
+    <div id="subtasks-for-{{ task.id }}" class="mt-4">
+    </div>
+</li>

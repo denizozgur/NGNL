@@ -1,0 +1,12 @@
+{# The main response: the list of subtasks and the 'Add' button #}
+{% include 'core/partials/subtask_list.html' %}
+
+{# The OOB (Out of Band) response: replaces the 'Subtasks' button #}
+<div id="subtask-btn-container-{{ parent_task.id }}" hx-swap-oob="true">
+    <button hx-get="{% url 'get_subtasks' parent_task.id %}?clear=true"
+            hx-target="#subtasks-for-{{ parent_task.id }}"
+            hx-swap="innerHTML"
+            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-3 rounded-md transition-colors">
+        Close
+    </button>
+</div>

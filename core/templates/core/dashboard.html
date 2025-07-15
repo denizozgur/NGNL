@@ -6,6 +6,12 @@
     <title>Your Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
+
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 
@@ -14,67 +20,53 @@
         <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">Welcome, <span class="text-blue-600">{{ user.username }}</span>!</h1>
 
         <!-- SECTION 1: YOUR TASKS -->
-        <h2 class="text-2xl font-semibold text-gray-700 border-b pb-2 mb-4">Your Tasks</h2>
-        <ul class="space-y-4">
+        <div class="flex justify-between items-center border-b pb-2 mb-4">
+            <h2 class="text-2xl font-semibold text-gray-700">Your Tasks</h2>
+            <!-- This container holds the "+ Add Task" button -->
+            <div id="add-task-form-container">
+                <button hx-get="{% url 'get_add_task_form' %}"
+                        hx-target="#add-task-form-container"
+                        hx-swap="outerHTML"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                    + Add Task
+                </button>
+            </div>
+        </div>
+
+        <!-- This is the list where all tasks will appear. -->
+        <!-- We give it an ID so htmx knows where to add the new task. -->
+        <ul id="task-list" class="space-y-4">
             {% for task in tasks %}
-                <li id="task-{{ task.id }}" class="bg-white p-4 rounded-lg shadow-md flex-col"> 
-                    <!-- Parent Task Row -->
-                    <div class="flex justify-between items-center w-full">
-                        <span class="font-bold text-lg">{{ task.name }}</span>
-                        <div class="flex items-center space-x-2">
-                            
-                            <!-- Expand Button (will be replaced by htmx on click) -->
-                            {% if task.subtasks.exists %}
-                                <button hx-get="{% url 'get_subtasks' task.id %}"
-                                        hx-target="#subtasks-for-{{ task.id }}"
-                                        hx-swap="innerHTML"
-                                        id="expand-btn-{{ task.id }}"
-                                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition-colors">
-                                    +
-                                </button>
-                            {% endif %}
-                            
-                            <!-- Log Button -->
-                            <form id="log-form-{{ task.id }}" method="POST" 
-                                  hx-post="{% url 'log_task' task.id %}"
-                                  hx-target="#task-{{ task.id }}" 
-                                  hx-swap="outerHTML">
-                                {% csrf_token %}
-                                <input type="hidden" name="is_htmx" value="true">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-md transition-colors">Log</button>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- Target for Subtasks -->
-                    <div id="subtasks-for-{{ task.id }}" class="mt-4">
-                        <!-- Subtasks will be loaded here by htmx -->
-                    </div>
-                </li>
+                <!-- For each task, we now use the clean partial template we created in Step 1. -->
+                {% include 'core/partials/task_item.html' with task=task %}
             {% empty %}
-                <li class="bg-white p-4 rounded-lg shadow-sm text-gray-500">You haven't created any tasks yet.</li>
+                <li id="empty-task-list" class="bg-white p-4 rounded-lg shadow-sm text-gray-500">You haven't created any tasks yet.</li>
             {% endfor %}
         </ul>
-        
+              
         <!-- SECTION 2: YOUR SKILLS -->
-        <h2 class="text-2xl font-semibold text-gray-700 border-b pb-2 mt-10 mb-4">Your Skills</h2>
-        <!-- This div now listens for the 'levelUp' event and loads its content dynamically -->
+        <!-- We wrap the heading and the link in a flex container to align them -->
+        <div class="flex justify-between items-center border-b pb-2 mt-10 mb-4">
+            <h2 class="text-2xl font-semibold text-gray-700">Your Skills</h2>
+            <!-- This is the new link to your skills management page -->
+            <a href="{% url 'skills_page' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm py-2 px-3 rounded-md transition-colors">
+                Manage Skills →
+            </a>
+        </div>
+
         <div id="skills-section" 
-             hx-trigger="load, levelUp from:body" 
-             hx-get="{% url 'get_skills_list' %}"
-             hx-swap="innerHTML">
-            <!-- Initial content is loaded by the hx-trigger="load" -->
+            hx-trigger="load, levelUp from:body" 
+            hx-get="{% url 'get_skills_list' %}"
+            hx-swap="innerHTML">
             <p class="text-gray-500">Loading skills...</p>
         </div>
 
-        <!-- SECTION 3: ACTIVE BUFFS -->
+        <!-- SECTION 3: ACTIVE BUFFS (This part is unchanged) -->
         <h2 class="text-2xl font-semibold text-gray-700 border-b pb-2 mt-10 mb-4">Active Buffs</h2>
-        <!-- This div also listens for 'levelUp' and loads its content dynamically -->
         <div id="buffs-section"
              hx-trigger="load, levelUp from:body"
              hx-get="{% url 'get_buffs_list' %}"
              hx-swap="innerHTML">
-            <!-- Initial content is loaded by the hx-trigger="load" -->
             <p class="text-gray-500">Loading buffs...</p>
         </div>
 

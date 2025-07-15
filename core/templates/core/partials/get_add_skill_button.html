@@ -1,0 +1,9 @@
+<!-- FILE: core/templates/core/partials/get_add_skill_button.html -->
+<button
+    hx-get="{% url 'get_add_skill_form' %}"
+    hx-target="#add-skill-form-container"
+    hx-swap="innerHTML"
+    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+>
+    Create New Skill
+</button>

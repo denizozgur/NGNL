@@ -1,0 +1,11 @@
+{# The main response is empty, which clears the subtask div #}
+
+{# The OOB response: brings back the original 'Subtasks' button #}
+<div id="subtask-btn-container-{{ task.id }}" hx-swap-oob="true">
+    <button hx-get="{% url 'get_subtasks' task.id %}"
+            hx-target="#subtasks-for-{{ task.id }}"
+            hx-swap="innerHTML"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition-colors">
+        Subtasks
+    </button>
+</div>

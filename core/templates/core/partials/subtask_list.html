@@ -1,17 +1,19 @@
+      
 <ul class="ml-4 space-y-2 border-l-2 border-gray-200 pl-4">
     {% for subtask in subtasks %}
-        <li id="task-{{ subtask.id }}" class="bg-gray-50 p-3 rounded-md shadow-sm flex justify-between items-center">
-            <span class="font-medium text-gray-700">{{ subtask.name }}</span>
-            <form id="log-form-{{ subtask.id }}" method="POST" action="{% url 'log_task' subtask.id %}" 
-                  hx-post="{% url 'log_task' subtask.id %}"
-                  hx-target="#task-{{ subtask.id }}" 
-                  hx-swap="outerHTML">
-                {% csrf_token %}
-                <input type="hidden" name="is_htmx" value="true">
-                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-md text-sm">Log</button>
-            </form>
-        </li>
+        {% include 'core/partials/task_item.html' with task=subtask %}
     {% empty %}
-        <li class="text-sm text-gray-500">This parent task has no subtasks.</li>
+        <li class="text-sm text-gray-500 italic">No subtasks yet.</li>
     {% endfor %}
 </ul>
+
+<div id="add-subtask-form-container-{{ parent_task.id }}" class="ml-4 pl-4 mt-2">
+    <button hx-get="{% url 'get_add_subtask_form' parent_task.id %}"
+            hx-target="#add-subtask-form-container-{{ parent_task.id }}"
+            hx-swap="innerHTML"
+            class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-md">
+        + Add Subtask
+    </button>
+</div>
+
+    

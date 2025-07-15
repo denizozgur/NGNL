@@ -1,0 +1,10 @@
+<form hx-post="{% url 'add_subtask' parent_task.id %}"
+      hx-target="previous ul"
+      hx-swap="beforeend"
+      hx-on="htmx:afterRequest: this.closest('form').remove()">
+    {% csrf_token %}
+    <div class="flex space-x-2">
+        <input type="text" name="subtask_name" class="flex-grow p-2 border rounded-md text-sm" placeholder="Enter new subtask...">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-md text-sm">Save</button>
+    </div>
+</form>

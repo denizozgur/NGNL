@@ -1,0 +1,32 @@
+<!-- FILE: core/templates/core/partials/add_skill_form.html -->
+<form
+    hx-post="{% url 'add_skill' %}"
+    hx-target="#skill-list"
+    hx-swap="beforeend"
+    hx-on::after-request="this.reset(); document.getElementById('no-skills-message')?.remove();"
+    class="bg-gray-100 p-4 rounded-lg shadow-inner"
+>
+    {% csrf_token %}
+    <h3 class="text-xl font-semibold mb-2 text-gray-700">New Skill</h3>
+    <div class="flex space-x-2">
+        <input
+            type="text"
+            name="skill_name"
+            class="flex-grow p-2 border rounded"
+            placeholder="Enter skill name (e.g., Programming)"
+            required
+        >
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            Save
+        </button>
+        <button
+            type="button"
+            hx-get="{% url 'get_add_skill_button' %}"
+            hx-target="#add-skill-form-container"
+            hx-swap="innerHTML"
+            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+            Cancel
+        </button>
+    </div>
+</form>
