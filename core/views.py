@@ -32,28 +32,29 @@ def dashboard(request):
 @login_required
 def log_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
-
-    # --- MODIFICATION STARTS HERE ---
     
     # 1. Get the count of buffs BEFORE logging the task
     buff_count_before = Buff.objects.filter(user=request.user, is_active=True).count()
 
-    # Create the log(s) - this is the existing logic that might trigger a level up
+    # --- THIS IS THE CHANGE ---
+    # We now only create ONE log for the task that was clicked.
+    # The signal will handle the subtask skill inheritance.
     TaskLog.objects.create(user=request.user, task=task)
     
+    # We still get the subtasks to pass to the htmx response for the UI.
     subtasks = task.subtasks.all()
-    if subtasks.exists():
-        for subtask in subtasks:
-            TaskLog.objects.create(user=request.user, task=subtask)
 
     # 2. Get the count of buffs AFTER logging the task
     buff_count_after = Buff.objects.filter(user=request.user, is_active=True).count()
     
-    # 3. Create the htmx response object
+    # 3. Create the htmx response object (This logic remains the same)
     if request.POST.get('is_htmx'):
+        # If the logged task has subtasks, we use the cascading response
+        # to show they were logged too.
         if subtasks.exists():
             context = {'task': task, 'subtasks': subtasks}
             response = render(request, 'core/partials/cascading_log_response.html', context)
+        # Otherwise, use the standard "logged" response
         else:
             context = {'task': task}
             response = render(request, 'core/partials/task_item_logged.html', context)
