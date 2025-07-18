@@ -1,16 +1,16 @@
-<!-- FILE: core/templates/core/partials/skill_task_manager.html (Corrected and Final) -->
+<!-- FILE: core/templates/core/partials/skill_task_manager.html (CLEANED UP) -->
+
+<!-- 
+This is the pure content of the manager panel.
+The "Close" button has been removed from this file.
+-->
 <div class="bg-gray-50 p-4 rounded-lg border">
     <div class="flex justify-between items-center mb-3">
         <h4 class="text-md font-semibold text-gray-800">Task Associations</h4>
-        <!-- This button now clears this component by setting its container's HTML to empty -->
-        <button
-            onclick="document.getElementById('task-manager-for-{{ skill.id }}').innerHTML = ''"
-            class="text-sm bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600">
-            Close
-        </button>
+        <!-- The extra close button that was here has been DELETED -->
     </div>
 
-    <!-- Linked Tasks -->
+    <!-- Linked Tasks (This part is unchanged) -->
     <div class="mb-4">
         <h5 class="text-sm font-bold text-green-700 mb-2">Linked Tasks</h5>
         <div class="space-y-2">
@@ -21,7 +21,6 @@
                         hx-post="{% url 'disassociate_task_from_skill' skill.id task.id %}"
                         hx-target="#task-manager-for-{{ skill.id }}"
                         hx-swap="innerHTML"
-                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                         class="text-sm bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
                         Remove
                     </button>
@@ -32,7 +31,7 @@
         </div>
     </div>
 
-    <!-- Unlinked Tasks -->
+    <!-- Unlinked Tasks (This part is unchanged) -->
     <div>
         <h5 class="text-sm font-bold text-blue-700 mb-2">Available Tasks to Link</h5>
         <div class="space-y-2">
@@ -43,7 +42,6 @@
                         hx-post="{% url 'associate_task_to_skill' skill.id task.id %}"
                         hx-target="#task-manager-for-{{ skill.id }}"
                         hx-swap="innerHTML"
-                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                         class="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">
                         Add
                     </button>

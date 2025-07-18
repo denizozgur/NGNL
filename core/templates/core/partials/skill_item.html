@@ -1,6 +1,6 @@
-<!-- FILE: core/templates/core/partials/skill_item.html (Corrected) -->
+<!-- FILE: core/templates/core/partials/skill_item.html (DEFINITIVE FIX) -->
 <div id="skill-{{ skill.id }}" class="bg-white p-4 rounded-lg shadow-md flex-col">
-    <!-- Top row for skill name and the permanent button -->
+    <!-- Top row for skill name and the button container -->
     <div class="flex justify-between items-center w-full">
         <!-- Clickable Skill Name (for editing) -->
         <div
@@ -12,8 +12,8 @@
             {{ skill.name }}
         </div>
         
-        <!-- This button is now permanent. It only loads content into the div below. -->
-        <div class="flex items-center space-x-2">
+        <!-- This is the button's container, just like for the subtask button -->
+        <div id="skill-manager-button-{{ skill.id }}">
             <button
                 hx-get="{% url 'get_skill_task_manager' skill.id %}"
                 hx-target="#task-manager-for-{{ skill.id }}"
@@ -25,8 +25,8 @@
         </div>
     </div>
 
-    <!-- This is the dedicated, permanent container for the task manager panel -->
+    <!-- This is the container for the panel content, just like for the subtask list -->
     <div id="task-manager-for-{{ skill.id }}" class="mt-4">
-        <!-- The manager panel will be loaded here -->
+        <!-- The manager panel will be loaded here by the button above -->
     </div>
 </div>

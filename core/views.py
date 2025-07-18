@@ -290,13 +290,23 @@ def delete_skill(request, skill_id):
 
 
 # --- FILE: core/views.py ---
-
+# --- FILE: core/views.py (Replace the function with this) ---
 @login_required
 def get_skill_task_manager(request, skill_id):
     """
-    Fetches and returns the task management UI for a specific skill.
+    Fetches and returns the task management UI for a specific skill,
+    or clears it if 'clear=true' is passed.
+    This logic now mirrors the get_subtasks view.
     """
     skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+
+    # If the "Close" button was clicked, it sends ?clear=true
+    if request.GET.get('clear'):
+        # Return an empty main response to clear the panel
+        # And include the OOB template to restore the original button
+        return render(request, 'core/partials/manage_tasks_button_oob.html', {'skill': skill})
+
+    # If the "Manage Tasks" button was clicked, get the data for the panel
     linked_tasks = skill.tasks.all()
     unlinked_tasks = Task.objects.filter(user=request.user).exclude(id__in=linked_tasks.values_list('id', flat=True))
 
@@ -306,10 +316,8 @@ def get_skill_task_manager(request, skill_id):
         'unlinked_tasks': unlinked_tasks
     }
     
-    # --- THIS IS THE FIX ---
-    # Ensure this line points to 'skill_task_manager.html' and NOT an old template
-    # like 'skill_task_manager_with_close_btn.html'
-    return render(request, 'core/partials/skill_task_manager.html', context)
+    # Render the template that contains both the panel AND the OOB "Close" button
+    return render(request, 'core/partials/skill_task_manager_with_close_btn.html', context)
 
 @require_POST
 @login_required
@@ -324,6 +332,7 @@ def associate_task_to_skill(request, skill_id, task_id):
     skill.tasks.add(task)
     
     # After adding, we return the refreshed manager component
+    # IMPORTANT: Ensure this view returns the correct template now
     return get_skill_task_manager(request, skill_id)
 
 @require_POST
@@ -340,5 +349,4 @@ def disassociate_task_from_skill(request, skill_id, task_id):
 
     # After removing, we also return the refreshed manager component
     return get_skill_task_manager(request, skill_id)
-
 
