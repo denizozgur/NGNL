@@ -1,0 +1,56 @@
+      
+<!-- FILE: core/templates/core/partials/edit_skill_form.html -->
+<div id="skill-{{ skill.id }}" class="bg-yellow-50 p-4 rounded-lg shadow">
+    <form
+        hx-put="{% url 'update_skill' skill.id %}"
+        hx-target="#skill-{{ skill.id }}"
+        hx-swap="outerHTML"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+    >
+        {% csrf_token %}
+        <div class="flex justify-between items-center">
+            <input
+                type="text"
+                name="skill_name"
+                class="flex-grow p-2 border rounded"
+                value="{{ skill.name }}"
+                required
+            >
+            <div class="flex items-center space-x-2 ml-4">
+                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-3 rounded">
+                    Save
+                </button>
+
+                <!-- 
+                ============================================
+                == THIS IS THE NEW DELETE BUTTON TO ADD ==
+                ============================================
+                -->
+                <button
+                    type="button"
+                    hx-delete="{% url 'delete_skill' skill.id %}"
+                    hx-target="closest div.shadow" 
+                    hx-swap="outerHTML"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-confirm="Are you sure you want to delete this skill?"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded"
+                >
+                    Delete
+                </button>
+                <!-- ============================================ -->
+                
+                <button
+                    type="button"
+                    hx-get="{% url 'get_skill_item' skill.id %}"
+                    hx-target="#skill-{{ skill.id }}"
+                    hx-swap="outerHTML"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded"
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+    

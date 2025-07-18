@@ -20,4 +20,12 @@ urlpatterns = [
     path('get-add-skill-form/', views.get_add_skill_form, name='get_add_skill_form'),
     path('get-add-skill-button/', views.get_add_skill_button, name='get_add_skill_button'),
     path('add_skill/', views.add_skill, name='add_skill'),
+    path('get_skill_edit_form/<int:skill_id>/', views.get_skill_edit_form, name='get_skill_edit_form'),
+    path('update_skill/<int:skill_id>/', views.update_skill, name='update_skill'),
+    path('get_skill_item/<int:skill_id>/', views.get_skill_item, name='get_skill_item'),
+    path('delete_skill/<int:skill_id>/', views.delete_skill, name='delete_skill'),
+    path('get_skill_task_manager/<int:skill_id>/', views.get_skill_task_manager, name='get_skill_task_manager'),
+    path('associate_task/<int:skill_id>/<int:task_id>/', views.associate_task_to_skill, name='associate_task_to_skill'),
+    path('disassociate_task/<int:skill_id>/<int:task_id>/', views.disassociate_task_from_skill, name='disassociate_task_from_skill'),
+
 ]

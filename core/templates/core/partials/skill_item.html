@@ -1,5 +1,32 @@
-<!-- FILE: core/templates/core/partials/skill_item.html -->
-<div class="bg-white p-4 rounded-lg shadow flex justify-between items-center">
-    <span class="font-semibold text-lg text-gray-700">{{ skill.name }}</span>
-    <!-- We will add edit/delete buttons here later -->
+<!-- FILE: core/templates/core/partials/skill_item.html (Corrected) -->
+<div id="skill-{{ skill.id }}" class="bg-white p-4 rounded-lg shadow-md flex-col">
+    <!-- Top row for skill name and the permanent button -->
+    <div class="flex justify-between items-center w-full">
+        <!-- Clickable Skill Name (for editing) -->
+        <div
+            hx-get="{% url 'get_skill_edit_form' skill.id %}"
+            hx-target="#skill-{{ skill.id }}"
+            hx-swap="outerHTML"
+            class="font-semibold text-lg text-gray-700 cursor-pointer hover:text-blue-600 transition-colors flex-grow"
+        >
+            {{ skill.name }}
+        </div>
+        
+        <!-- This button is now permanent. It only loads content into the div below. -->
+        <div class="flex items-center space-x-2">
+            <button
+                hx-get="{% url 'get_skill_task_manager' skill.id %}"
+                hx-target="#task-manager-for-{{ skill.id }}"
+                hx-swap="innerHTML"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-md transition-colors"
+            >
+                Manage Tasks
+            </button>
+        </div>
+    </div>
+
+    <!-- This is the dedicated, permanent container for the task manager panel -->
+    <div id="task-manager-for-{{ skill.id }}" class="mt-4">
+        <!-- The manager panel will be loaded here -->
+    </div>
 </div>

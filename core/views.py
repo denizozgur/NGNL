@@ -238,3 +238,106 @@ def add_skill(request):
     # If the name is blank, return an empty response so nothing happens
     return HttpResponse("")
 
+
+
+@login_required
+def get_skill_edit_form(request, skill_id):
+    """
+    Returns the form for editing a specific skill.
+    """
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    return render(request, 'core/partials/edit_skill_form.html', {'skill': skill})
+
+@require_http_methods(["PUT"])
+@login_required
+def update_skill(request, skill_id):
+    """
+    Processes the edit form submission and updates the skill.
+    """
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    
+    from django.http import QueryDict
+    put_data = QueryDict(request.body)
+    new_name = put_data.get('skill_name')
+
+    if new_name:
+        skill.name = new_name
+        skill.save()
+    
+    # Return the updated, normal skill display
+    return render(request, 'core/partials/skill_item.html', {'skill': skill})
+
+@login_required
+def get_skill_item(request, skill_id):
+    """
+    Returns the normal display for a single skill item (used for canceling an edit).
+    """
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    return render(request, 'core/partials/skill_item.html', {'skill': skill})
+
+@require_http_methods(["DELETE"])
+@login_required
+def delete_skill(request, skill_id):
+    """
+    Finds the skill by its ID, deletes it, and returns an empty response.
+    """
+    skill_to_delete = get_object_or_404(Skill, id=skill_id, user=request.user)
+    skill_to_delete.delete()
+    
+    # Return an empty 200 OK response to signal success to htmx
+    return HttpResponse("")
+
+
+# --- FILE: core/views.py ---
+
+@login_required
+def get_skill_task_manager(request, skill_id):
+    """
+    Fetches and returns the task management UI for a specific skill.
+    """
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    linked_tasks = skill.tasks.all()
+    unlinked_tasks = Task.objects.filter(user=request.user).exclude(id__in=linked_tasks.values_list('id', flat=True))
+
+    context = {
+        'skill': skill,
+        'linked_tasks': linked_tasks,
+        'unlinked_tasks': unlinked_tasks
+    }
+    
+    # --- THIS IS THE FIX ---
+    # Ensure this line points to 'skill_task_manager.html' and NOT an old template
+    # like 'skill_task_manager_with_close_btn.html'
+    return render(request, 'core/partials/skill_task_manager.html', context)
+
+@require_POST
+@login_required
+def associate_task_to_skill(request, skill_id, task_id):
+    """
+    Creates an association between a skill and a task.
+    """
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    # This is the key line to create the association
+    skill.tasks.add(task)
+    
+    # After adding, we return the refreshed manager component
+    return get_skill_task_manager(request, skill_id)
+
+@require_POST
+@login_required
+def disassociate_task_from_skill(request, skill_id, task_id):
+    """
+    Removes an association between a skill and a task.
+    """
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    # This is the key line to remove the association
+    skill.tasks.remove(task)
+
+    # After removing, we also return the refreshed manager component
+    return get_skill_task_manager(request, skill_id)
+
+
